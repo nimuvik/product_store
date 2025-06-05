@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Продуктовый Рай - Ваш магазин продуктов</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #e0f7fa 0%, #c3e8e5 100%);
+            background-size: cover;
+        }
+        .product-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .product-card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.2);
+        }
+        .fade-in {
+            animation: fadeIn 1s ease-in;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .btn {
+            transition: transform 0.2s, background-color 0.2s;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            background-color: #2563eb;
+        }
+        .decorative-line {
+            height: 2px;
+            background: linear-gradient(to right, #ffffff, #48bb78, #ffffff);
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans">
+    <!-- Header -->
+    <header class="bg-green-700 text-white p-6">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-3xl font-bold">Продуктовый Рай</h1>
+            <div class="flex space-x-6">
+                <a href="{% url 'home' %}" class="hover:text-yellow-300 transition-colors">Главная</a>
+                <a href="/about" class="hover:text-yellow-300 transition-colors">О нас</a>
+                <a href="/contacts" class="hover:text-yellow-300 transition-colors">Контакты</a>
+                <a href="/favorites" class="hover:text-yellow-300 transition-colors">Избранное</a>
+                <a href="{% url 'category_list' %}" class="hover:text-yellow-300 transition-colors">Категории</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="bg-green-600 text-white text-center py-12">
+        <h1 class="text-5xl font-bold mb-2">Вкусные продукты с доставкой!</h1>
+        <p class="text-xl mb-6">Найдите свежие продукты своей мечты</p>
+        <div class="flex justify-center space-x-4">
+            <select class="p-3 border rounded-lg bg-white text-green-800">
+                <option>Категория</option>
+                <option>Фрукты</option>
+                <option>Молочные продукты</option>
+                <option>Овощи</option>
+            </select>
+            <form method="get" action="" class="flex">
+                <input type="text" name="q" id="searchInput" placeholder="Поиск продуктов..." value="{{ search_query }}" class="p-3 border rounded-l-lg w-64 text-black">
+                <button type="submit" class="bg-blue-600 text-white p-3 rounded-r-lg btn">Найти продукт</button>
+            </form>
+        </div>
+    </section>
+
+    <!-- Widget 1: Latest Products -->
+    <section class="container mx-auto py-12">
+        <h2 class="text-3xl font-bold mb-6 text-green-800">Новинки магазина</h2>
+        <div class="decorative-line"></div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8" id="latestProducts">
+            {% for product in featured_products %}
+                <div class="product-card bg-white p-6 rounded-lg shadow-md fade-in">
+                    <img src="{{ product.image }}" alt="{{ product.name }}" class="w-full h-48 object-cover rounded-lg">
+                    <h3 class="text-xl font-semibold mt-4"><a href="{% url 'product_detail' product.id %}" class="text-green-600 hover:underline">{{ product.name }}</a></h3>
+                    <p class="text-gray-600">{{ product.name_en }}</p>
+                    <p class="text-gray-600">Добавлено: {{ product.added_date }}</p>
+                    <p class="text-green-700 font-bold text-2xl">{{ product.price }} руб.</p>
+                    {% if product.stock < 10 %}<p class="low-stock text-red-600 font-semibold">Осталось мало!</p>{% endif %}
+                    <button class="favorite-btn text-yellow-500 text-2xl mt-2" onclick="toggleFavorite({{ product.id }})">★ Добавить в избранное</button>
+                </div>
+            {% endfor %}
+        </div>
+        <a href="/products/latest" class="mt-6 inline-block bg-green-600 text-white px-6 py-3 rounded-lg btn hover:bg-green-700">Посмотреть все новинки</a>
+    </section>
+
+    <!-- Widget 2: Special Discounts -->
+    <section class="container mx-auto py-12">
+        <h2 class="text-3xl font-bold mb-6 text-green-800">Супер скидки</h2>
+        <div class="decorative-line"></div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8" id="discountProducts">
+            {% for product in seasonal_offers %}
+                <div class="product-card bg-white p-6 rounded-lg shadow-md fade-in">
+                    <img src="{{ product.image }}" alt="{{ product.name }}" class="w-full h-48 object-cover rounded-lg">
+                    <h3 class="text-xl font-semibold mt-4"><a href="{% url 'product_detail' product.id %}" class="text-green-600 hover:underline">{{ product.name }}</a></h3>
+                    <p class="text-gray-600">{{ product.name_en }}</p>
+                    <p class="text-gray-600">Добавлено: {{ product.added_date }}</p>
+                    <p class="text-green-700 font-bold text-2xl">{{ product.price }} руб.</p>
+                    {% if product.stock < 10 %}<p class="low-stock text-red-600 font-semibold">Осталось мало!</p>{% endif %}
+                    <button class="favorite-btn text-yellow-500 text-2xl mt-2" onclick="toggleFavorite({{ product.id }})">★ Добавить в избранное</button>
+                </div>
+            {% endfor %}
+        </div>
+        <a href="/products/discounts" class="mt-6 inline-block bg-green-600 text-white px-6 py-3 rounded-lg btn hover:bg-green-700">Посмотреть все скидки</a>
+    </section>
+
+    <!-- Widget 3: Popular Categories -->
+    <section class="container mx-auto py-12">
+        <h2 class="text-3xl font-bold mb-6 text-green-800">Популярные категории</h2>
+        <div class="decorative-line"></div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8" id="popularCategories">
+            {% for category in category_stats %}
+                <div class="product-card bg-white p-6 rounded-lg shadow-md fade-in">
+                    <h3 class="text-xl font-semibold mt-4"><a href="{% url 'category_detail' category.id %}" class="text-green-600 hover:underline">{{ category.name }}</a></h3>
+                    <p class="text-gray-600">Средний рейтинг: {{ category.avg_rating|default:"0.0" }}</p>
+                    <div class="mt-4">
+                        <span class="inline-block bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
+                            {% if category.name == "Фрукты" %}🍎{% elif category.name == "Молочные продукты" %}🥛{% elif category.name == "Овощи" %}🥕{% elif category.name == "Напитки" %}🥤{% elif category.name == "Хлебобулочные изделия" %}🥖{% elif category.name == "Мясо" %}🥩{% elif category.name == "Морепродукты" %}🐟{% elif category.name == "Снеки" %}🍟{% elif category.name == "Замороженные продукты" %}❄️{% elif category.name == "Консервы" %}🥫{% else %}🍴{% endif %} Категория
+                        </span>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        <a href="{% url 'category_list' %}" class="mt-6 inline-block bg-green-600 text-white px-6 py-3 rounded-lg btn hover:bg-green-700">Посмотреть все категории</a>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-green-700 text-white p-6 text-center">
+        <p class="text-lg">© 2025 Продуктовый Рай. Все права защищены.</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const cards = document.querySelectorAll('.fade-in');
+            cards.forEach(card => {
+                card.style.opacity = '0';
+                setTimeout(() => {
+                    card.style.opacity = '1';
+                }, 100);
+            });
+        });
+
+        function toggleFavorite(productId) {
+            alert(`Товар ${productId} добавлен/удален из избранного`);
+        }
+    </script>
+</body>
+</html>
